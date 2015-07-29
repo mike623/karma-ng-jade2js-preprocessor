@@ -7,7 +7,7 @@ var LOGGER_STUB = {
     };
   }
 };
-var BAST_PATH_STUB = 'foo';
+var BASE_PATH_STUB = 'foo';
 var FILE_STUB = {
   originalPath: '/tmp/original/path.jade',
   path: '/tmp/new/path'
@@ -16,7 +16,7 @@ var FILE_STUB = {
 describe('jade2js', function() {
 
   describe('default behavior (no config)', function() {
-    var compileFn = jade2js(LOGGER_STUB, BAST_PATH_STUB);
+    var compileFn = jade2js(LOGGER_STUB, BASE_PATH_STUB);
     var html;
 
     before(function(done) {
@@ -29,6 +29,28 @@ describe('jade2js', function() {
 
     it('should succeed', function() {
       expect(html).to.contain('/tmp/original/path.html');
+      expect(html).to.contain('[]).run([\'$templateCache\', function($templateCache)');
+    });
+
+  });
+
+  describe('with module name', function() {
+    var compileFn = jade2js(LOGGER_STUB, BASE_PATH_STUB, {
+      moduleName: 'foo'
+    });
+    var html;
+
+    before(function(done) {
+      var JADE_SNIPPET = 'h1 This is a bland message';
+      compileFn(JADE_SNIPPET, FILE_STUB, function(result) {
+        html = result;
+        done();
+      });
+    });
+
+    it('should succeed', function() {
+      expect(html).to.contain('/tmp/original/path.html');
+      expect(html).to.contain('module.run([\'$templateCache\', function($templateCache)');
     });
 
   });
@@ -41,7 +63,7 @@ describe('jade2js', function() {
       }
     };
 
-    var compileFn = jade2js(LOGGER_STUB, BAST_PATH_STUB, LOCALS_CONFIG);
+    var compileFn = jade2js(LOGGER_STUB, BASE_PATH_STUB, LOCALS_CONFIG);
     var html;
 
     before(function(done) {
@@ -71,7 +93,7 @@ describe('jade2js', function() {
       path: '/tmp/new/path'
     };
 
-    var compileFn = jade2js(LOGGER_STUB, BAST_PATH_STUB, TRANSFORM_CONFIG);
+    var compileFn = jade2js(LOGGER_STUB, BASE_PATH_STUB, TRANSFORM_CONFIG);
     var html;
 
     before(function(done) {
@@ -113,7 +135,7 @@ describe('jade2js', function() {
           b: 2
         }
       };
-      var compileFn = jade2js(LOGGER_STUB, BAST_PATH_STUB, config);
+      var compileFn = jade2js(LOGGER_STUB, BASE_PATH_STUB, config);
       compileFn('h1', FILE_STUB, function() {
         expect(callOptions).to.eql(config.jadeOptions);
         done();
